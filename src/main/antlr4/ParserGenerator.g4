@@ -138,5 +138,5 @@ subrule returns [List<Wrapper<Element>> textList]
 
 NNAME: [a-z][a-zA-Z0-9_]*;
 TNAME: [A-Z][a-zA-Z0-9_]*;
-TEXT: '\'\''|('\''.*?~('\\')'\'');
+TEXT: '\'\''|('\''(.*?~('\\'))?('\\\\')*'\'');
 WS: [ \n\t]+ -> skip;
