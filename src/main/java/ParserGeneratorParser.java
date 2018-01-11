@@ -79,7 +79,7 @@ public class ParserGeneratorParser extends Parser {
 	public ATN getATN() { return _ATN; }
 
 
-	    private final Set<String> elements = new HashSet<>();
+	    private final Map<String, Wrapper<String>> elements = new HashMap<>();
 	    private final Set<String> terminals = new HashSet<>();
 	    private final List<Rule> rules = new ArrayList<>();
 
@@ -99,10 +99,6 @@ public class ParserGeneratorParser extends Parser {
 	        T getElement() {
 	            return element;
 	        }
-	    }
-
-	    private void addElement(String string) {
-	        elements.add(string);
 	    }
 
 	public ParserGeneratorParser(TokenStream input) {
@@ -177,29 +173,31 @@ public class ParserGeneratorParser extends Parser {
 			_ctx.stop = _input.LT(-1);
 
 			    StringBuilder builder1 = new StringBuilder();
-			    for (String element: elements) {
+			    for (Map.Entry<String, Wrapper<String>> entry: elements.entrySet()) {
 			        builder1.append("        ");
-			        builder1.append(element);
+			        builder1.append(entry.getValue().getElement());
 			        builder1.append('\n');
 			    }
-			    builder1.append("        List<Rule> rules = new ArrayList<>();\n");
+			    builder1.append("        List<Rule> ______rules = new ArrayList<>();\n");
 			    builder1.append(_localctx.builder);
+			    System.err.println(rules);
 			    try {
 			        ControlTable controlTable = new ControlTable(new NonTerminal("start"), rules);
 			        ControlTable.Wrapper<Element, SuperState<State>> wrapper = controlTable.getTable();
-			        builder1.append("        int[][] table = new int[][] ");
+			        builder1.append("        int[][] ______table = new int[][] ");
 			        builder1.append(wrapper.getTable());
 			        builder1.append(";\n");
 			        String string = wrapper.getElements().stream().map(a -> '"' + a.getName() + '"').collect(Collectors.toList()).toString();
-			        builder1.append("        String[] names = new String[] ");
+			        builder1.append("        String[] ______names = new String[] ");
 			        builder1.append("{" + string.substring(1, string.length() - 1) + "};\n");
 			    } catch (GeneratorException e) {
 			        e.printStackTrace();
 			    }
-			    builder1.append("        List<Terminal> terminals = Arrays.asList(");
+			    builder1.append("        List<Terminal> ______terminals = Arrays.asList(");
 			    Iterator<String> iterator = terminals.iterator();
 			    while (iterator.hasNext()) {
-			        builder1.append(iterator.next());
+			        String cur = iterator.next();
+			        builder1.append(cur);
 			        if (iterator.hasNext()) {
 			            builder1.append(", ");
 			        }
@@ -247,7 +245,7 @@ public class ParserGeneratorParser extends Parser {
 			setState(21);
 			((Nonterm_ruleContext)_localctx).NNAME = match(NNAME);
 
-			        addElement("NonTerminal " + (((Nonterm_ruleContext)_localctx).NNAME!=null?((Nonterm_ruleContext)_localctx).NNAME.getText():null) + " = new NonTerminal(\"" + (((Nonterm_ruleContext)_localctx).NNAME!=null?((Nonterm_ruleContext)_localctx).NNAME.getText():null) + "\");");
+			        elements.put((((Nonterm_ruleContext)_localctx).NNAME!=null?((Nonterm_ruleContext)_localctx).NNAME.getText():null), new Wrapper((((Nonterm_ruleContext)_localctx).NNAME!=null?((Nonterm_ruleContext)_localctx).NNAME.getText():null), "NonTerminal " + (((Nonterm_ruleContext)_localctx).NNAME!=null?((Nonterm_ruleContext)_localctx).NNAME.getText():null) + " = new NonTerminal(\"" + (((Nonterm_ruleContext)_localctx).NNAME!=null?((Nonterm_ruleContext)_localctx).NNAME.getText():null) + "\");"));
 			    
 			setState(23);
 			match(T__1);
@@ -263,7 +261,7 @@ public class ParserGeneratorParser extends Parser {
 					setState(25);
 					match(T__2);
 
-					        _localctx.builder.append("        rules.add(new Rule(" + (((Nonterm_ruleContext)_localctx).NNAME!=null?((Nonterm_ruleContext)_localctx).NNAME.getText():null) + ", Arrays.asList(");
+					        _localctx.builder.append("        ______rules.add(new Rule(" + (((Nonterm_ruleContext)_localctx).NNAME!=null?((Nonterm_ruleContext)_localctx).NNAME.getText():null) + ", Arrays.asList(");
 					        for (int i = 0; i < ((Nonterm_ruleContext)_localctx).subrule.textList.size(); i++) {
 					            _localctx.builder.append(((Nonterm_ruleContext)_localctx).subrule.textList.get(i).getName());
 					            if (i != ((Nonterm_ruleContext)_localctx).subrule.textList.size() - 1) {
@@ -283,7 +281,7 @@ public class ParserGeneratorParser extends Parser {
 			setState(33);
 			((Nonterm_ruleContext)_localctx).subrule = subrule();
 
-			        _localctx.builder.append("        rules.add(new Rule(" + (((Nonterm_ruleContext)_localctx).NNAME!=null?((Nonterm_ruleContext)_localctx).NNAME.getText():null) + ", Arrays.asList(");
+			        _localctx.builder.append("        ______rules.add(new Rule(" + (((Nonterm_ruleContext)_localctx).NNAME!=null?((Nonterm_ruleContext)_localctx).NNAME.getText():null) + ", Arrays.asList(");
 			        for (int i = 0; i < ((Nonterm_ruleContext)_localctx).subrule.textList.size(); i++) {
 			            _localctx.builder.append(((Nonterm_ruleContext)_localctx).subrule.textList.get(i).getName());
 			            if (i != ((Nonterm_ruleContext)_localctx).subrule.textList.size() - 1) {
@@ -351,9 +349,10 @@ public class ParserGeneratorParser extends Parser {
 			}
 
 
-			        addElement("Terminal " + (((Term_ruleContext)_localctx).TNAME!=null?((Term_ruleContext)_localctx).TNAME.getText():null) + " = new Terminal(\"" + (((Term_ruleContext)_localctx).TNAME!=null?((Term_ruleContext)_localctx).TNAME.getText():null) +
-			         "\", \"" + (((Term_ruleContext)_localctx).TEXT!=null?((Term_ruleContext)_localctx).TEXT.getText():null).substring(1, (((Term_ruleContext)_localctx).TEXT!=null?((Term_ruleContext)_localctx).TEXT.getText():null).length() - 1) + "\", " +
-			          (_localctx.needToSkip ? "true" : "false") + ");");
+			        String pattern = (((Term_ruleContext)_localctx).TEXT!=null?((Term_ruleContext)_localctx).TEXT.getText():null).substring(1, (((Term_ruleContext)_localctx).TEXT!=null?((Term_ruleContext)_localctx).TEXT.getText():null).length() - 1);
+			        elements.put((((Term_ruleContext)_localctx).TNAME!=null?((Term_ruleContext)_localctx).TNAME.getText():null), new Wrapper<String>((((Term_ruleContext)_localctx).TNAME!=null?((Term_ruleContext)_localctx).TNAME.getText():null), "Terminal " + (((Term_ruleContext)_localctx).TNAME!=null?((Term_ruleContext)_localctx).TNAME.getText():null) + " = new Terminal(\"" + (((Term_ruleContext)_localctx).TNAME!=null?((Term_ruleContext)_localctx).TNAME.getText():null) +
+			         "\", \"" + pattern + "\", " +
+			          (_localctx.needToSkip ? "true" : "false") + ");"));
 			        terminals.add((((Term_ruleContext)_localctx).TNAME!=null?((Term_ruleContext)_localctx).TNAME.getText():null));
 			    
 			}
@@ -400,55 +399,77 @@ public class ParserGeneratorParser extends Parser {
 
 		int _la;
 		try {
-			enterOuterAlt(_localctx, 1);
-			{
-			setState(52); 
+			setState(57);
 			_errHandler.sync(this);
-			_la = _input.LA(1);
-			do {
+			switch (_input.LA(1)) {
+			case NNAME:
+			case TNAME:
+			case TEXT:
+				enterOuterAlt(_localctx, 1);
 				{
-				setState(52);
-				_errHandler.sync(this);
-				switch (_input.LA(1)) {
-				case TNAME:
-					{
-					setState(46);
-					((SubruleContext)_localctx).TNAME = match(TNAME);
-
-					        _localctx.textList.add(new Wrapper((((SubruleContext)_localctx).TNAME!=null?((SubruleContext)_localctx).TNAME.getText():null), new Terminal((((SubruleContext)_localctx).TNAME!=null?((SubruleContext)_localctx).TNAME.getText():null), "", false)));
-					        terminals.add((((SubruleContext)_localctx).TNAME!=null?((SubruleContext)_localctx).TNAME.getText():null));
-					    
-					}
-					break;
-				case NNAME:
-					{
-					setState(48);
-					((SubruleContext)_localctx).NNAME = match(NNAME);
-
-					        _localctx.textList.add(new Wrapper((((SubruleContext)_localctx).NNAME!=null?((SubruleContext)_localctx).NNAME.getText():null), new NonTerminal((((SubruleContext)_localctx).NNAME!=null?((SubruleContext)_localctx).NNAME.getText():null))));
-					    
-					}
-					break;
-				case TEXT:
-					{
-					setState(50);
-					((SubruleContext)_localctx).TEXT = match(TEXT);
-
-					        String name = Terminal.getName("PRODUCED");
-					        addElement("Terminal " + name + " = new Terminal(\"" + name + "\", \"" + (((SubruleContext)_localctx).TEXT!=null?((SubruleContext)_localctx).TEXT.getText():null).substring(1, (((SubruleContext)_localctx).TEXT!=null?((SubruleContext)_localctx).TEXT.getText():null).length() - 1) + "\", false);");
-					        _localctx.textList.add(new Wrapper(name, new Terminal(name, "", false)));
-					        terminals.add(name);
-					    
-					}
-					break;
-				default:
-					throw new NoViableAltException(this);
-				}
-				}
-				setState(54); 
+				setState(52); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << NNAME) | (1L << TNAME) | (1L << TEXT))) != 0) );
+				do {
+					{
+					setState(52);
+					_errHandler.sync(this);
+					switch (_input.LA(1)) {
+					case TNAME:
+						{
+						setState(46);
+						((SubruleContext)_localctx).TNAME = match(TNAME);
+
+						        String name = (((SubruleContext)_localctx).TNAME!=null?((SubruleContext)_localctx).TNAME.getText():null);
+						        _localctx.textList.add(new Wrapper((((SubruleContext)_localctx).TNAME!=null?((SubruleContext)_localctx).TNAME.getText():null), new Terminal((((SubruleContext)_localctx).TNAME!=null?((SubruleContext)_localctx).TNAME.getText():null), "", false)));
+						        terminals.add((((SubruleContext)_localctx).TNAME!=null?((SubruleContext)_localctx).TNAME.getText():null));
+						    
+						}
+						break;
+					case NNAME:
+						{
+						setState(48);
+						((SubruleContext)_localctx).NNAME = match(NNAME);
+
+						        _localctx.textList.add(new Wrapper((((SubruleContext)_localctx).NNAME!=null?((SubruleContext)_localctx).NNAME.getText():null), new NonTerminal((((SubruleContext)_localctx).NNAME!=null?((SubruleContext)_localctx).NNAME.getText():null))));
+						    
+						}
+						break;
+					case TEXT:
+						{
+						setState(50);
+						((SubruleContext)_localctx).TEXT = match(TEXT);
+
+						        String name = (((SubruleContext)_localctx).TEXT!=null?((SubruleContext)_localctx).TEXT.getText():null).substring(1, (((SubruleContext)_localctx).TEXT!=null?((SubruleContext)_localctx).TEXT.getText():null).length() - 1);
+						        String realName = Terminal.getName("PRODUCED");
+						        if (!elements.containsKey((((SubruleContext)_localctx).TEXT!=null?((SubruleContext)_localctx).TEXT.getText():null))) {
+						            elements.put((((SubruleContext)_localctx).TEXT!=null?((SubruleContext)_localctx).TEXT.getText():null), new Wrapper<String>(realName, "Terminal " + realName + " = new Terminal(\"" + name + "\", \"" + name + "\", false);"));
+						            terminals.add(realName);
+						        } else {
+						            realName = elements.get((((SubruleContext)_localctx).TEXT!=null?((SubruleContext)_localctx).TEXT.getText():null)).getName();
+						        }
+						        _localctx.textList.add(new Wrapper(realName, new Terminal(name, "", false)));
+						    
+						}
+						break;
+					default:
+						throw new NoViableAltException(this);
+					}
+					}
+					setState(54); 
+					_errHandler.sync(this);
+					_la = _input.LA(1);
+				} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << NNAME) | (1L << TNAME) | (1L << TEXT))) != 0) );
+				}
+				break;
+			case T__0:
+			case T__2:
+				enterOuterAlt(_localctx, 2);
+				{
+				}
+				break;
+			default:
+				throw new NoViableAltException(this);
 			}
 		}
 		catch (RecognitionException re) {
@@ -463,22 +484,23 @@ public class ParserGeneratorParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\n;\4\2\t\2\4\3\t"+
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\n>\4\2\t\2\4\3\t"+
 		"\3\4\4\t\4\4\5\t\5\3\2\3\2\3\2\3\2\5\2\17\n\2\3\2\3\2\7\2\23\n\2\f\2\16"+
 		"\2\26\13\2\3\3\3\3\3\3\3\3\3\3\3\3\3\3\7\3\37\n\3\f\3\16\3\"\13\3\3\3"+
 		"\3\3\3\3\3\4\3\4\3\4\3\4\3\4\3\4\5\4-\n\4\3\4\3\4\3\5\3\5\3\5\3\5\3\5"+
-		"\3\5\6\5\67\n\5\r\5\16\58\3\5\2\2\6\2\4\6\b\2\2\2=\2\24\3\2\2\2\4\27\3"+
-		"\2\2\2\6&\3\2\2\2\b\66\3\2\2\2\n\13\5\4\3\2\13\f\b\2\1\2\f\17\3\2\2\2"+
-		"\r\17\5\6\4\2\16\n\3\2\2\2\16\r\3\2\2\2\17\20\3\2\2\2\20\21\7\3\2\2\21"+
-		"\23\3\2\2\2\22\16\3\2\2\2\23\26\3\2\2\2\24\22\3\2\2\2\24\25\3\2\2\2\25"+
-		"\3\3\2\2\2\26\24\3\2\2\2\27\30\7\7\2\2\30\31\b\3\1\2\31 \7\4\2\2\32\33"+
-		"\5\b\5\2\33\34\7\5\2\2\34\35\b\3\1\2\35\37\3\2\2\2\36\32\3\2\2\2\37\""+
-		"\3\2\2\2 \36\3\2\2\2 !\3\2\2\2!#\3\2\2\2\" \3\2\2\2#$\5\b\5\2$%\b\3\1"+
-		"\2%\5\3\2\2\2&\'\7\b\2\2\'(\7\4\2\2(,\7\t\2\2)*\7\6\2\2*+\7\7\2\2+-\b"+
-		"\4\1\2,)\3\2\2\2,-\3\2\2\2-.\3\2\2\2./\b\4\1\2/\7\3\2\2\2\60\61\7\b\2"+
-		"\2\61\67\b\5\1\2\62\63\7\7\2\2\63\67\b\5\1\2\64\65\7\t\2\2\65\67\b\5\1"+
-		"\2\66\60\3\2\2\2\66\62\3\2\2\2\66\64\3\2\2\2\678\3\2\2\28\66\3\2\2\28"+
-		"9\3\2\2\29\t\3\2\2\2\b\16\24 ,\668";
+		"\3\5\6\5\67\n\5\r\5\16\58\3\5\5\5<\n\5\3\5\2\2\6\2\4\6\b\2\2\2A\2\24\3"+
+		"\2\2\2\4\27\3\2\2\2\6&\3\2\2\2\b;\3\2\2\2\n\13\5\4\3\2\13\f\b\2\1\2\f"+
+		"\17\3\2\2\2\r\17\5\6\4\2\16\n\3\2\2\2\16\r\3\2\2\2\17\20\3\2\2\2\20\21"+
+		"\7\3\2\2\21\23\3\2\2\2\22\16\3\2\2\2\23\26\3\2\2\2\24\22\3\2\2\2\24\25"+
+		"\3\2\2\2\25\3\3\2\2\2\26\24\3\2\2\2\27\30\7\7\2\2\30\31\b\3\1\2\31 \7"+
+		"\4\2\2\32\33\5\b\5\2\33\34\7\5\2\2\34\35\b\3\1\2\35\37\3\2\2\2\36\32\3"+
+		"\2\2\2\37\"\3\2\2\2 \36\3\2\2\2 !\3\2\2\2!#\3\2\2\2\" \3\2\2\2#$\5\b\5"+
+		"\2$%\b\3\1\2%\5\3\2\2\2&\'\7\b\2\2\'(\7\4\2\2(,\7\t\2\2)*\7\6\2\2*+\7"+
+		"\7\2\2+-\b\4\1\2,)\3\2\2\2,-\3\2\2\2-.\3\2\2\2./\b\4\1\2/\7\3\2\2\2\60"+
+		"\61\7\b\2\2\61\67\b\5\1\2\62\63\7\7\2\2\63\67\b\5\1\2\64\65\7\t\2\2\65"+
+		"\67\b\5\1\2\66\60\3\2\2\2\66\62\3\2\2\2\66\64\3\2\2\2\678\3\2\2\28\66"+
+		"\3\2\2\289\3\2\2\29<\3\2\2\2:<\3\2\2\2;\66\3\2\2\2;:\3\2\2\2<\t\3\2\2"+
+		"\2\t\16\24 ,\668;";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

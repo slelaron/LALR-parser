@@ -17,7 +17,7 @@ public class Tokenizer {
                     continue retry;
                 }
             }
-            throw new TokenizerException("Can't split string on tokens " + string);
+            throw new TokenizerException("Can't split string on tokens: " + string);
         }
         tokens.add(Terminal.EXIT.copy());
         return tokens;

@@ -28,7 +28,7 @@ public class TreeBuilder {
             }
             int next = table[states.peek()][curSymbol];
             if (next == 0) {
-                throw new ParserException("No suitable way to go");
+                throw new ParserException("No suitable way to go " + tokens);
             }
             if (next < 0) {
                 if (next == -1) {

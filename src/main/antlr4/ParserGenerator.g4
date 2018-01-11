@@ -6,7 +6,7 @@ grammar ParserGenerator;
 }
 
 @parser::members {
-    private final Set<String> elements = new HashSet<>();
+    private final Map<String, Wrapper<String>> elements = new HashMap<>();
     private final Set<String> terminals = new HashSet<>();
     private final List<Rule> rules = new ArrayList<>();
 
@@ -27,39 +27,37 @@ grammar ParserGenerator;
             return element;
         }
     }
-
-    private void addElement(String string) {
-        elements.add(string);
-    }
 }
 
 gram returns [String pText]
 locals [StringBuilder builder = new StringBuilder()]
 @after {
     StringBuilder builder1 = new StringBuilder();
-    for (String element: elements) {
+    for (Map.Entry<String, Wrapper<String>> entry: elements.entrySet()) {
         builder1.append("        ");
-        builder1.append(element);
+        builder1.append(entry.getValue().getElement());
         builder1.append('\n');
     }
-    builder1.append("        List<Rule> rules = new ArrayList<>();\n");
+    builder1.append("        List<Rule> ______rules = new ArrayList<>();\n");
     builder1.append($builder);
+    System.err.println(rules);
     try {
         ControlTable controlTable = new ControlTable(new NonTerminal("start"), rules);
         ControlTable.Wrapper<Element, SuperState<State>> wrapper = controlTable.getTable();
-        builder1.append("        int[][] table = new int[][] ");
+        builder1.append("        int[][] ______table = new int[][] ");
         builder1.append(wrapper.getTable());
         builder1.append(";\n");
         String string = wrapper.getElements().stream().map(a -> '"' + a.getName() + '"').collect(Collectors.toList()).toString();
-        builder1.append("        String[] names = new String[] ");
+        builder1.append("        String[] ______names = new String[] ");
         builder1.append("{" + string.substring(1, string.length() - 1) + "};\n");
     } catch (GeneratorException e) {
         e.printStackTrace();
     }
-    builder1.append("        List<Terminal> terminals = Arrays.asList(");
+    builder1.append("        List<Terminal> ______terminals = Arrays.asList(");
     Iterator<String> iterator = terminals.iterator();
     while (iterator.hasNext()) {
-        builder1.append(iterator.next());
+        String cur = iterator.next();
+        builder1.append(cur);
         if (iterator.hasNext()) {
             builder1.append(", ");
         }
@@ -79,9 +77,9 @@ locals [StringBuilder builder = new StringBuilder()]
 }
 :
     NNAME {
-        addElement("NonTerminal " + $NNAME.text + " = new NonTerminal(\"" + $NNAME.text + "\");");
+        elements.put($NNAME.text, new Wrapper($NNAME.text, "NonTerminal " + $NNAME.text + " = new NonTerminal(\"" + $NNAME.text + "\");"));
     } ':' (subrule '|' {
-        $builder.append("        rules.add(new Rule(" + $NNAME.text + ", Arrays.asList(");
+        $builder.append("        ______rules.add(new Rule(" + $NNAME.text + ", Arrays.asList(");
         for (int i = 0; i < $subrule.textList.size(); i++) {
             $builder.append($subrule.textList.get(i).getName());
             if (i != $subrule.textList.size() - 1) {
@@ -91,7 +89,7 @@ locals [StringBuilder builder = new StringBuilder()]
         $builder.append(")));\n");
         rules.add(new Rule(new NonTerminal($NNAME.text), $subrule.textList.stream().map(Wrapper<Element>::getElement).collect(Collectors.toList())));
     })* subrule {
-        $builder.append("        rules.add(new Rule(" + $NNAME.text + ", Arrays.asList(");
+        $builder.append("        ______rules.add(new Rule(" + $NNAME.text + ", Arrays.asList(");
         for (int i = 0; i < $subrule.textList.size(); i++) {
             $builder.append($subrule.textList.get(i).getName());
             if (i != $subrule.textList.size() - 1) {
@@ -107,9 +105,10 @@ term_rule
 locals [boolean needToSkip = false]
 :
     TNAME ':' TEXT ('->' NNAME {if ($NNAME.text.equals("skip")) {$needToSkip = true;}})? {
-        addElement("Terminal " + $TNAME.text + " = new Terminal(\"" + $TNAME.text +
-         "\", \"" + $TEXT.text.substring(1, $TEXT.text.length() - 1) + "\", " +
-          ($needToSkip ? "true" : "false") + ");");
+        String pattern = $TEXT.text.substring(1, $TEXT.text.length() - 1);
+        elements.put($TNAME.text, new Wrapper<String>($TNAME.text, "Terminal " + $TNAME.text + " = new Terminal(\"" + $TNAME.text +
+         "\", \"" + pattern + "\", " +
+          ($needToSkip ? "true" : "false") + ");"));
         terminals.add($TNAME.text);
     };
 
@@ -119,18 +118,25 @@ subrule returns [List<Wrapper<Element>> textList]
 }
 :
     (TNAME {
+        String name = $TNAME.text;
         $textList.add(new Wrapper($TNAME.text, new Terminal($TNAME.text, "", false)));
         terminals.add($TNAME.text);
     }| NNAME {
         $textList.add(new Wrapper($NNAME.text, new NonTerminal($NNAME.text)));
     }| TEXT {
-        String name = Terminal.getName("PRODUCED");
-        addElement("Terminal " + name + " = new Terminal(\"" + name + "\", \"" + $TEXT.text.substring(1, $TEXT.text.length() - 1) + "\", false);");
-        $textList.add(new Wrapper(name, new Terminal(name, "", false)));
-        terminals.add(name);
-    })+;
+        String name = $TEXT.text.substring(1, $TEXT.text.length() - 1);
+        String realName = Terminal.getName("PRODUCED");
+        if (!elements.containsKey($TEXT.text)) {
+            elements.put($TEXT.text, new Wrapper<String>(realName, "Terminal " + realName + " = new Terminal(\"" + name + "\", \"" + name + "\", false);"));
+            terminals.add(realName);
+        } else {
+            realName = elements.get($TEXT.text).getName();
+        }
+        $textList.add(new Wrapper(realName, new Terminal(name, "", false)));
+    })+
+    |;
 
 NNAME: [a-z][a-zA-Z0-9_]*;
 TNAME: [A-Z][a-zA-Z0-9_]*;
-TEXT: '\''.*?~('\\')'\'';
+TEXT: '\'\''|('\''.*?~('\\')'\'');
 WS: [ \n\t]+ -> skip;

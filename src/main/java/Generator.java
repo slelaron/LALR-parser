@@ -15,15 +15,15 @@ public class Generator {
             "import java.io.IOException;\n" +
             "import java.nio.file.*;\n" +
             "public class Implementation {\n" +
-            "    public static void main(String[] args) throws IOException {\n" +
-            "        byte[] encoded = Files.readAllBytes(Paths.get(\"Input\"));\n" +
-            "        String content = new String(encoded, \"UTF-8\");\n";
+            "    public static void main(String[] ______args) throws IOException {\n" +
+            "        byte[] ______encoded = Files.readAllBytes(Paths.get(\"Input\"));\n" +
+            "        String ______content = new String(______encoded, \"UTF-8\");\n";
     private static final String suffix =
             "        try {\n" +
-            "            Element element = TreeBuilder.build(table, names, terminals, rules, content);\n" +
-            "            System.out.println(element);\n" +
-            "        } catch (TokenizerException | ParserException ex) {\n" +
-            "            ex.printStackTrace();\n" +
+            "            Element ______element = TreeBuilder.build(______table, ______names, ______terminals, ______rules, ______content);\n" +
+            "            System.out.println(______element);\n" +
+            "        } catch (TokenizerException | ParserException ______ex) {\n" +
+            "            ______ex.printStackTrace();\n" +
             "        }\n" +
             "    }\n" +
             "}\n";

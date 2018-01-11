@@ -46,7 +46,7 @@ public class Terminal implements Element {
         return prefix + "_" + Math.abs(random.nextLong());
     }
 
-    public static final Terminal EPSILON = new Terminal("~_7911745207894147684", "^$", true);
+    public static final Terminal EPSILON = new Terminal("~_7911745207894147684", "", true);
     public static final Terminal EXIT = new Terminal("$_6207967798290200467", "^$", false);
 
     public int hashCode() {
