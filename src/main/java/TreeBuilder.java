@@ -12,7 +12,8 @@ public class TreeBuilder {
         for (int i = 0; i < names.length; i++) {
             map.put(names[i], i);
         }
-        Deque<Element> stack = new ArrayDeque<>();
+        List<Element> stack = new ArrayList<>();
+        int pointer = 0;
         Deque<Integer> states = new ArrayDeque<>();
         states.add(0);
         boolean good = false;
@@ -43,23 +44,31 @@ public class TreeBuilder {
                 NonTerminal nonTerminal = rules.get(cur).getLeft().copy();
                 List<Element> children = new ArrayList<>();
                 for (int i = 0; i < rules.get(cur).getRight().size(); i++) {
-                    children.add(stack.pop());
+                    children.add(stack.get(pointer - 1));
+                    pointer--;
                     states.pop();
                 }
                 Collections.reverse(children);
-                children.forEach(nonTerminal::addChildren);
+                nonTerminal.addChildren(children);
                 tokens.push(nonTerminal);
             }
             if (next > 0) {
                 int cur = next - 1;
-                stack.push(tokens.pop());
+                Element element = tokens.pop();
+                element.applyOperation(stack.subList(0, pointer));
+                if (pointer == stack.size()) {
+                    stack.add(element);
+                } else {
+                    stack.set(pointer, element);
+                }
+                pointer++;
                 states.push(cur);
             }
         }
         if (!good) {
             throw new ParserException("Can't create tree");
         }
-        assert(stack.size() == 1);
-        return stack.pop();
+        assert(pointer == 1);
+        return stack.get(pointer - 1);
     }
 }

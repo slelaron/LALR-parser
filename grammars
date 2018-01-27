@@ -1,0 +1,111 @@
+start: something "\\+" start | something "-" start | something;
+something: another "\\*" something | another;
+another: "\\(" start "\\)" | number;
+number: "-" NUMBER | NUMBER;
+
+NUMBER: "([1-9][0-9]*)|0";
+WS: "[ \n\t]" -> skip;
+
+
+
+
+start: anything 'System.err.println($anything.result);';
+anything returns [Integer result]: something "\\+" anything '$result = $something.result + $anything.result;' | something "-" anything '$result = $something.result - $anything.result;'| something '$result = $something.result;';
+something returns [Integer result]: another "\\*" something '$result = $another.result * $something.result;' | another '$result = $another.result;';
+another returns [Integer result]: "\\(" anything "\\)" '$result = $anything.result;' | number '$result = $number.result;';
+number returns [Integer result]: "-" NUMBER '$result = -Integer.parseInt($NUMBER.text);' | NUMBER '$result = Integer.parseInt($NUMBER.text);';
+
+NUMBER: "([1-9][0-9]*)|0";
+WS: "[ \n\t]" -> skip;
+
+
+
+
+start: number another[$number.result] 'System.err.println($another.result);';
+another[Integer acc] returns [Integer result] locals[Integer tmp]: "\\+" number '$tmp = $number.result + $acc;' another[$tmp] '$result = $another.result;' | '$result = $acc;';
+number returns [Integer result]: "-" NUMBER '$result = -Integer.parseInt($NUMBER.text);' | NUMBER '$result = Integer.parseInt($NUMBER.text);';
+
+NUMBER: "([1-9][0-9]*)|0";
+WS: "[ \n\t]" -> skip;
+
+
+
+
+start: "var" name ":" "array" "\\[" leftBorder "\\.\\." rightBorder "\\]" "of" type ";";
+name: WORD;
+type: WORD;
+leftBorder: NUMBER;
+rightBorder: NUMBER;
+
+WORD: "[a-zA-Z][a-z-A-Z0-9]*";
+NUMBER: "[0-9]+";
+WS: "[ \n\t]+" -> skip;
+
+
+
+
+start: "function" name "\\(" args "\\)" ":" type ";";
+args: name ":" type argsRest | ;
+argsRest: "," name ":" type argsRest | ;
+name: WORD;
+type: WORD;
+
+WORD: "[a-zA-Z][a-zA-Z0-9]*";
+WS: "[ \n\t]+" -> skip;
+
+
+
+
+start: type name "\\(" args "\\)" ";";
+args: type name argsRest | ;
+argsRest: "," type name argsRest | ;
+name: WORD;
+type: WORD;
+
+WORD: "[a-zA-Z_$][a-zA-Z0-9_$]*";
+WS: "[ \n\t]+" -> skip;
+
+
+
+
+start: type arg ";";
+arg: pointers name args;
+args: "," pointers name args | ;
+pointers: pointers "\\*" | ;
+type: WORD;
+name: WORD;
+
+WORD: "[a-zA-Z_$][a-zA-Z0-9_$]*";
+WS: "[ \n\t]" -> skip;
+
+
+
+
+start: "var" group;
+group: vars groupRest;
+groupRest: vars groupRest | ;
+vars: names ":" type ";";
+names: name namesRest;
+namesRest: "," name namesRest | ;
+name: WORD;
+type: WORD;
+
+WORD: "[a-zA-Z][a-zA-Z0-9]*";
+WS: "[ \n\t]+" -> skip;
+
+
+
+
+start: l0 d C start a0 | l0 d a0;
+d: l1 A start B a2 | l1 n a2;
+n: l1 N a0;
+a0: ;
+a2: ;
+l0: ;
+l1: ;
+
+C: "C";
+A: "A";
+B: "B";
+N: "([1-9][0-9]*)|0";
+WS: "[ \n\t]" -> skip;

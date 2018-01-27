@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 public class ControlTable {
     private final List<Rule> initial;
     private final Map<? extends Element, List<Rule>> rules;
-    private final NonTerminal curStart;
     private final SuperState<State> startSuperState;
     private final Rule startRule;
     private final FirstCounter firstCounter;
@@ -16,6 +15,16 @@ public class ControlTable {
     private final Map<SuperState<SimpleState>, SuperState<State>> simpleToNormal = new HashMap<>();
     public final static Function<SuperState<State>, SuperState<SimpleState>> normalToSimple =
             a -> new SuperState<>(a.getStates().stream().map(State::simplify).collect(Collectors.toList()));
+    private final static Comparator<State> comp = (a, b) -> {
+        SimpleState c = a.simplify();
+        SimpleState d = b.simplify();
+        int hashC = c.hashCode();
+        int hashD = d.hashCode();
+        if (hashC == hashD) {
+            return c.toString().compareTo(d.toString());
+        }
+        return Integer.compare(hashC, hashD);
+    };
 
     private void closureRule(SuperState<State> superState) {
         Set<State> stateSet = new HashSet<>();
@@ -95,12 +104,10 @@ public class ControlTable {
                 SuperState<SimpleState> simpleHave = normalToSimple.apply(have);
                 if (table.containsKey(simpleHave)) {
                     boolean truth = false;
-                    Iterator<State> iter1 = normalToSimple.apply(simpleToNormal.get(simpleHave)).getStates().stream().map(SimpleState::getParent).iterator();
-                    Iterator<State> iter2 = simpleHave.getStates().stream().map(SimpleState::getParent).iterator();
+                    Iterator<State> iter1 = simpleToNormal.get(simpleHave).getStates().stream().sorted(comp).iterator();
+                    Iterator<State> iter2 = have.getStates().stream().sorted(comp).iterator();
                     while (iter1.hasNext() && iter2.hasNext()) {
-                        State first = iter1.next();
-                        State second = iter2.next();
-                        truth |= first.concatenate(second);
+                        truth |= iter1.next().concatenate(iter2.next());
                     }
                     if (truth) {
                         queue.add(simpleToNormal.get(simpleHave));
@@ -213,7 +220,7 @@ public class ControlTable {
 
     ControlTable(NonTerminal start, List<Rule> rules) throws GeneratorException {
         initial = new ArrayList<>();
-        curStart = new NonTerminal(Terminal.getName("Start"));
+        NonTerminal curStart = new NonTerminal(Terminal.generateName("Start"));
         startRule = new Rule(curStart, Collections.singletonList(start));
         initial.add(startRule);
         initial.addAll(rules);

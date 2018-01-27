@@ -10,20 +10,23 @@ import java.nio.file.Paths;
  * Created by nikita on 07.01.18.
  */
 public class Generator {
-    private static final String prefix =
+    private static final String header =
             "import java.util.*;\n" +
             "import java.io.IOException;\n" +
-            "import java.nio.file.*;\n" +
-            "public class Implementation {\n" +
-            "    public static void main(String[] ______args) throws IOException {\n" +
-            "        byte[] ______encoded = Files.readAllBytes(Paths.get(\"Input\"));\n" +
-            "        String ______content = new String(______encoded, \"UTF-8\");\n";
+            "import java.nio.file.*;\n";
+    private static final String classDecl =
+            "@SuppressWarnings(\"unchecked\")\n" +
+            "public class Implementation {\n";
+    private static final String prefix =
+            "    public static void main(String[] ___args) throws IOException {\n" +
+            "        byte[] ___encoded = Files.readAllBytes(Paths.get(\"Input\"));\n" +
+            "        String ___content = new String(___encoded, \"UTF-8\");\n";
     private static final String suffix =
             "        try {\n" +
-            "            Element ______element = TreeBuilder.build(______table, ______names, ______terminals, ______rules, ______content);\n" +
-            "            System.out.println(______element);\n" +
-            "        } catch (TokenizerException | ParserException ______ex) {\n" +
-            "            ______ex.printStackTrace();\n" +
+            "            Element ___element = TreeBuilder.build(___table, ___names, ___terminals, ___rules, ___content);\n" +
+            "            System.out.println(___element);\n" +
+            "        } catch (TokenizerException | ParserException ___ex) {\n" +
+            "            ___ex.printStackTrace();\n" +
             "        }\n" +
             "    }\n" +
             "}\n";
@@ -32,7 +35,10 @@ public class Generator {
         ParserGeneratorLexer lexer = new ParserGeneratorLexer(stream);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         ParserGeneratorParser parser = new ParserGeneratorParser(tokens);
-        final String text = parser.gram().pText;
+        ParserGeneratorParser.GramContext gram = parser.gram();
+        final String pText = gram.parserText;
+        final String pHeader = gram.headerText;
+        final String pMembers = gram.membersText;
 
         Path p = Paths.get("./src/main/java/Implementation.java");
         try {
@@ -41,8 +47,15 @@ public class Generator {
             }
             PrintWriter writer = new PrintWriter(p.toFile());
 
+            writer.write(header);
+            writer.write(pHeader);
+            writer.write('\n');
+            writer.write(classDecl);
+            writer.write(pMembers);
+            writer.write('\n');
             writer.write(prefix);
-            writer.write(text);
+            writer.write(pText);
+            writer.write('\n');
             writer.write(suffix);
             writer.flush();
         } catch (IOException ex) {

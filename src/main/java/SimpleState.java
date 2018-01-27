@@ -41,6 +41,9 @@ public class SimpleState {
                 builder.append('.');
             }
             builder.append(rule.getRight().get(i));
+            if (i != rule.getRight().size() - 1) {
+                builder.append(" ");
+            }
         }
         if (position == rule.getRight().size()) {
             builder.append('.');

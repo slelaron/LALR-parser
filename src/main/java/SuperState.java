@@ -9,10 +9,10 @@ public class SuperState<T extends SimpleState> {
     }
 
     public void setStates(Collection<T> states) {
-        adding2(states);
+        adding(states);
     }
 
-    private void adding2(Collection<T> states) {
+    private void adding(Collection<T> states) {
         this.states = new HashSet<>(states);
     }
 
@@ -20,7 +20,7 @@ public class SuperState<T extends SimpleState> {
 
     SuperState() {}
     SuperState(Collection<T> states) {
-        adding2(states);
+        adding(states);
     }
 
     public String toString() {

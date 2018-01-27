@@ -1,4 +1,8 @@
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Random;
+import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,7 +45,7 @@ public class Terminal implements Element {
         this.skippable = skippable;
     }
 
-    public static String getName(String prefix) {
+    public static String generateName(String prefix) {
         final Random random = new Random();
         return prefix + "_" + Math.abs(random.nextLong());
     }
@@ -80,5 +84,19 @@ public class Terminal implements Element {
 
     public boolean isSkippable() {
         return skippable;
+    }
+
+    public void applyOperation(List<Element> elements) {}
+
+    public Object get(int index) {
+        if (index == 0) {
+            return new Wrapper<>(string);
+        } else {
+            throw new NoSuchElementException();
+        }
+    }
+
+    public String getObjectsTypes() {
+        return "Wrapper<java.lang.String>";
     }
 }
